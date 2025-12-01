@@ -38,7 +38,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${inter.variable} ${fraunces.variable} ${plexMono.variable} ${blaka.variable} font-sans antialiased`}>
+      <body 
+        className={`${inter.variable} ${fraunces.variable} ${plexMono.variable} ${blaka.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         {children}
         <Toaster />
       </body>

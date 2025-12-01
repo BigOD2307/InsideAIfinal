@@ -1,33 +1,60 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Newspaper, Sparkles, Calendar, ArrowRight, Loader2, TrendingUp, Search, Filter, Globe, RefreshCw } from 'lucide-react'
-import { VeilleReport } from '@/types'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { motion } from 'framer-motion'
+import { supabase } from '@/lib/supabase/client'
+import { toast } from 'sonner'
+
+// Type definitions
+type VeilleItem = {
+    id: string;
+    title: string;
+    summary: string;
+    category: string;
+    source_url: string | null;
+    published_at: string;
+    created_at: string;
+}
 
 export default function VeillePage() {
-  const [reports, setReports] = useState<VeilleReport[]>([])
+  const [items, setItems] = useState<VeilleItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
-  const handleGenerate = async () => {
-    setGenerating(true)
-    try {
-      const response = await fetch('/api/veille/generate', {
-        method: 'POST',
-      })
-      const data = await response.json()
-      if (data.report) {
-        setReports((prev) => [data.report, ...prev])
+  const fetchVeille = async () => {
+      try {
+          setLoading(true)
+          const { data, error } = await supabase
+              .from('veille_items')
+              .select('*')
+              .order('published_at', { ascending: false })
+          
+          if (error) throw error
+          setItems(data || [])
+      } catch (error) {
+          console.error('Error fetching veille:', error)
+          toast.error('Erreur lors du chargement de la veille')
+      } finally {
+          setLoading(false)
       }
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setGenerating(false)
-    }
+  }
+
+  useEffect(() => {
+      fetchVeille()
+  }, [])
+
+  const handleRefresh = async () => {
+    setGenerating(true)
+    // Simulation d'un refresh réseau pour l'UX
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    await fetchVeille()
+    setGenerating(false)
+    toast.success("Radar mis à jour avec succès")
   }
 
   return (
@@ -76,7 +103,7 @@ export default function VeillePage() {
             className="flex flex-col sm:flex-row gap-3"
           >
              <Button 
-              onClick={handleGenerate} 
+              onClick={handleRefresh} 
               disabled={generating}
               size="lg"
               className="h-14 rounded-2xl bg-white text-black hover:bg-white/90 shadow-[0_0_30px_-5px_rgba(255,255,255,0.4)] transition-all text-base font-semibold px-8"
@@ -120,8 +147,12 @@ export default function VeillePage() {
         </div>
       </motion.div>
 
-      {/* Reports Grid - Masonry Style */}
-      {reports.length === 0 ? (
+      {/* Reports Grid - Real Data */}
+      {loading && items.length === 0 ? (
+           <div className="flex h-64 items-center justify-center">
+               <Loader2 className="h-8 w-8 animate-spin text-white/20" />
+           </div>
+      ) : items.length === 0 ? (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -136,26 +167,16 @@ export default function VeillePage() {
                <Newspaper className="h-10 w-10 text-blue-400" />
              </div>
           </div>
-          <h2 className="font-title text-3xl font-medium text-white mb-4">Le radar est en veille</h2>
+          <h2 className="font-title text-3xl font-medium text-white mb-4">Le radar est vide</h2>
           <p className="max-w-md text-muted-foreground text-lg mb-8 leading-relaxed">
-            Aucune donnée récente détectée. Lancez une analyse pour capter les dernières opportunités du marché.
+            Aucune donnée n'a été trouvée dans la base de données.
           </p>
-          <Button 
-            onClick={handleGenerate} 
-            disabled={generating}
-            variant="outline"
-            size="lg"
-            className="h-12 px-8 rounded-full border-blue-500/30 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
-          >
-            Scanner le web
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
         </motion.div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {reports.map((report, idx) => (
+          {items.map((item, idx) => (
             <motion.div
-              key={report.id}
+              key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
@@ -168,24 +189,25 @@ export default function VeillePage() {
                 <div className="mb-6 flex items-center justify-between">
                   <div className="flex gap-2">
                     <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-400 backdrop-blur-sm">
-                      Nouveau
+                      {item.category}
                     </Badge>
                     <Badge variant="outline" className="border-white/10 bg-white/5 text-muted-foreground backdrop-blur-sm">
-                      {format(new Date(report.created_at), 'HH:mm', { locale: fr })}
+                      {format(new Date(item.published_at), 'dd MMM', { locale: fr })}
                     </Badge>
                   </div>
                 </div>
                 
                 <h3 className="font-title text-xl font-bold text-white leading-snug group-hover:text-blue-400 transition-colors">
-                  {report.title}
+                  {item.title}
                 </h3>
                 
                 <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground/80 line-clamp-4">
-                  {report.summary}
+                  {item.summary}
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-2">
-                   {['Market Watch', 'AI Trends'].map((tag, i) => (
+                    {/* Tags fictifs basés sur la catégorie pour l'instant */}
+                   {['AI Trends', 'Market Watch'].map((tag, i) => (
                       <span key={i} className="inline-flex items-center rounded-lg bg-white/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground border border-white/5 group-hover:border-white/10 transition-colors">
                         #{tag}
                       </span>
@@ -195,14 +217,19 @@ export default function VeillePage() {
 
               <div className="relative z-10 mt-8 flex items-center justify-between border-t border-white/5 pt-5">
                 <div className="flex -space-x-2">
+                   {/* Fake readers for social proof */}
                    {[1,2,3].map(i => (
                      <div key={i} className="h-7 w-7 rounded-full border-2 border-[#0F0F16] bg-gradient-to-br from-gray-700 to-gray-900" />
                    ))}
                 </div>
-                <Button variant="ghost" size="sm" className="h-9 rounded-full text-xs font-medium hover:bg-blue-500/10 hover:text-blue-400 transition-colors gap-1">
-                  Analyse complète
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
+                {item.source_url && (
+                    <Button variant="ghost" size="sm" asChild className="h-9 rounded-full text-xs font-medium hover:bg-blue-500/10 hover:text-blue-400 transition-colors gap-1 cursor-pointer">
+                        <a href={item.source_url} target="_blank" rel="noopener noreferrer">
+                            Lire la source
+                            <ArrowRight className="h-3.5 w-3.5" />
+                        </a>
+                    </Button>
+                )}
               </div>
             </motion.div>
           ))}
