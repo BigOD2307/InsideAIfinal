@@ -6,9 +6,6 @@ export const openai = new OpenAI({
 
 // IDs des assistants OpenAI
 export const ASSISTANT_IDS = {
-  CHAT: process.env.OPENAI_ASSISTANT_CHAT_ID || 'asst_d0dP7bYg4s6AqmUWopE4UQba',
-  VEILLE: process.env.OPENAI_ASSISTANT_VEILLE_ID || '',
-  COMMUNAUTE: process.env.OPENAI_ASSISTANT_COMMUNAUTE_ID || '',
-  RECOMMANDATION: process.env.OPENAI_ASSISTANT_RECOMMANDATION_ID || '',
+  // Coach Ella - L'Experte IA
+  CHAT: process.env.OPENAI_ASSISTANT_ID || 'asst_d0dP7bYg4s6AqmUWopE4UQba',
 } as const
-
