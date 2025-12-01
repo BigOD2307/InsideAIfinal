@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+:root {
+  --dark-amethyst: 275 100% 17%;
+  --indigo-ink: 275 88% 21%;
+  --indigo: 275 85% 25%;
+  --indigo-2: 275 80% 31%;
+  --indigo-bloom: 275 75% 37%;
+  --dark-violet: 276 62% 49%;
+  --lavender-purple: 276 72% 60%;
+  --bright-lavender: 276 80% 67%;
+  --mauve-magic: 278 100% 76%;
+  --mauve: 279 100% 80%;
+
+  --background: 240 10% 3.9%; /* Sombre profond, plus neutre */
+  --background-elevated: 240 10% 6%;
+  --background-soft: 240 10% 8%;
+  
+  --foreground: 0 0% 98%;
+  --foreground-muted: 240 5% 64.9%;
+  
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  
+  --primary: var(--lavender-purple); /* On garde l'accent violet InsideAI */
+  --primary-foreground: 282 100% 98%;
+  
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: var(--lavender-purple);
+  
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: #05050A; /* Fond noir profond uniforme */
+    color: hsl(var(--foreground));
+    min-height: 100vh;
+    font-family: var(--font-body), "Inter", system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01" on, "ss02" on, "liga" off;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden; /* Évite le scroll horizontal parasite */
+  }
+  
+  /* Suppression du pseudo-élément before qui causait le fond violet aléatoire au scroll */
+  body::before {
+    display: none; 
+  }
+
+  /* Subtil pattern de fond (optionnel, très léger) */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100px 100px;
+    mask-image: radial-gradient(circle at center, black, transparent 80%);
+    opacity: 0.4;
+  }
+
+  ::selection {
+    background: hsla(var(--primary) / 0.3);
+    color: white;
+  }
+  h1,
+  h2,
+  h3,
+  .font-title {
+    font-family: var(--font-title), "Fraunces", "Playfair Display", serif;
+    font-feature-settings: "liga" on, "clig" on;
+  }
+  code,
+  pre,
+  .font-code {
+    font-family: var(--font-code), "IBM Plex Mono", "JetBrains Mono", monospace;
+  }
+  .font-blaka {
+    font-family: var(--font-blaka), cursive;
+  }
+
+  /* Custom Scrollbar Premium */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsla(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsla(var(--muted-foreground) / 0.4);
+  }
+
+  /* Hide scrollbar for cleaner look in specific containers if needed */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.card-premium {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(20, 20, 25, 0.9), rgba(10, 10, 15, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-premium::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, hsla(var(--primary) / 0.15), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+  border-color: hsla(var(--primary) / 0.3);
+}
+
+.card-premium:hover::after {
+  opacity: 1;
+}
+
+.glow-copper {
+  box-shadow:
+    0 0 0 1px hsla(var(--bright-lavender) / 0.1),
+    0 22px 42px -34px hsla(var(--bright-lavender) / 0.55);
+}
+
+.cta-primary {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 22px 32px -22px hsla(var(--bright-lavender) / 0.4);
+}
+
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 48px -26px hsla(var(--mauve-magic) / 0.6);
+}
